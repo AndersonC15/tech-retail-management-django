@@ -16,8 +16,13 @@
 
     <div class="container mx-auto p-6">
         <div class="bg-indigo-600 rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center text-white">
-            <h1 class="text-2xl font-bold"><i class="fas fa-cash-register mr-2"></i> NextGen POS</h1>
-            <span class="bg-indigo-800 px-3 py-1 rounded-full text-sm">Modo Venta</span>
+            <h1 class="text-2xl font-bold"><i class="fas fa-cash-register mr-2"></i> NextGen</h1>
+             <div class="flex gap-3">
+                <a href="/dashboard/" class="text-sm bg-indigo-500 hover:bg-indigo-700 py-1 px-3 rounded-full transition">
+                    <i class="fas fa-chart-line"></i> Ir a Dashboard
+                </a>
+                <span class="text-sm bg-indigo-800 py-1 px-3 rounded-full">Ventas</span>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -55,19 +60,19 @@
 
                 <div class="mb-3">
                     <label class="block text-sm font-semibold mb-1">Buscar Producto</label>
-                <select id="producto" onchange="cargarInfoProducto()" class="w-full border p-2 rounded focus:ring-2 focus:ring-indigo-500">
-                    <option value="">-- Seleccione un producto --</option>
-                    {% for p in productos %}
-                        <option value="{{ p.id_producto }}" 
-                                data-nombre="{{ p.nombre }}" 
-                                data-precio="{{ p.precio_unitario }}"
-                                data-marca="{{ p.id_marca.nombre_marca }}" 
-                                data-categoria="{{ p.id_categoria.nombre_categoria }}"
-                                data-stock="{{ p.stock }}">
-                            {{ p.nombre }}
-                        </option>
-                    {% endfor %}
-                </select>
+                    <select id="producto" onchange="cargarInfoProducto()" class="w-full border p-2 rounded focus:ring-2 focus:ring-indigo-500">
+                        <option value="">-- Seleccione un producto --</option>
+                        {% for p in productos %}
+                            <option value="{{ p.id_producto }}" 
+                                    data-nombre="{{ p.nombre }}" 
+                                    data-precio="{{ p.precio_unitario }}"
+                                    data-marca="{{ p.id_marca.nombre_marca }}" 
+                                    data-categoria="{{ p.id_categoria.nombre_categoria }}"
+                                    data-stock="{{ p.stock }}">
+                                {{ p.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mb-3">
@@ -148,13 +153,10 @@
     <script>
         let carrito = [];
 
-        // VALIDACIÓN DE INPUT: Solo números positivos, rango 1-1000
+        // VALIDACIÓN DE INPUT
         function validarInput(input) {
-            // Elimina cualquier caracter que no sea número
             input.value = input.value.replace(/[^0-9]/g, '');
             let valor = parseInt(input.value);
-
-            // Reglas de rango
             if (isNaN(valor) || valor < 1) {
                 input.value = 1;
             } else if (valor > 1000) {
@@ -174,11 +176,9 @@
                 return;
             }
 
-            // Aquí jalamos los datos que pusimos en el HTML (data-marca, data-categoria)
             document.getElementById('marca_info').value = option.getAttribute('data-marca');
             document.getElementById('cat_info').value = option.getAttribute('data-categoria');
             
-            // Formatear precio
             let precio = parseFloat(option.getAttribute('data-precio'));
             document.getElementById('precio_info').value = "$" + precio.toFixed(2);
             document.getElementById('stock_info').value = option.getAttribute('data-stock');
@@ -187,7 +187,6 @@
         function agregarAlCarrito() {
             const sucursalSelect = document.getElementById('sucursal');
             
-            // VALIDAR: Sucursal obligatoria antes de empezar
             if (!sucursalSelect.value) {
                 return Swal.fire('Atención', 'Seleccione una sucursal primero.', 'warning');
             }
@@ -202,7 +201,6 @@
             const stockMax = parseInt(option.getAttribute('data-stock'));
             const precio = parseFloat(option.getAttribute('data-precio'));
 
-            // Validar Stock
             let cantidadActualEnCarrito = 0;
             const existe = carrito.find(item => item.id_producto === id);
             if (existe) cantidadActualEnCarrito = existe.cantidad;
@@ -211,7 +209,6 @@
                 return Swal.fire('Stock Insuficiente', `Solo hay ${stockMax} unidades disponibles.`, 'error');
             }
 
-            // Agregar o Actualizar
             if (existe) {
                 existe.cantidad += cantidad;
                 existe.subtotal = existe.cantidad * precio;
@@ -219,8 +216,8 @@
                 carrito.push({
                     id_producto: id,
                     nombre: option.getAttribute('data-nombre'),
-                    marca: option.getAttribute('data-marca'), // Ahora sí tendrá texto
-                    categoria: option.getAttribute('data-categoria'), // Ahora sí tendrá texto
+                    marca: option.getAttribute('data-marca'),
+                    categoria: option.getAttribute('data-categoria'),
                     precio: precio,
                     cantidad: cantidad,
                     subtotal: precio * cantidad
@@ -244,7 +241,6 @@
             let total = 0;
             let items = 0;
 
-            // LÓGICA DE BLOQUEO DE SUCURSAL
             if (carrito.length > 0) {
                 sucursalSelect.classList.add('bloqueado');
                 sucursalSelect.setAttribute('disabled', 'disabled');
@@ -310,28 +306,33 @@
                 items: carrito
             };
 
-            fetch('/nueva-venta/', { // Asegúrate que esta URL coincida con tu urls.py
+            fetch('/nueva-venta/', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken // INDISPENSABLE PARA EVITAR ERROR DE CONEXION
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify(data)
             })
             .then(response => {
                 if (!response.ok) {
-                    // Si el servidor devuelve error (500), intentamos leer el mensaje JSON
                     return response.json().then(err => { throw new Error(err.error || 'Error desconocido en servidor'); });
                 }
                 return response.json();
             })
             .then(data => {
-                Swal.fire('¡Venta Exitosa!', `Ticket Mongo ID: ${data.id_ticket_mongo}`, 'success')
-                .then(() => location.reload()); // Recargar página para limpiar
+                // AQUÍ ES EL CAMBIO CLAVE: Usamos data.codigo
+                Swal.fire(
+                    '¡Venta Exitosa!', 
+                    `Ticket Generado: <b>${data.codigo}</b>`, 
+                    'success'
+                ).then(() => {
+                    location.reload(); 
+                });
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire('Error de Conexión', error.message, 'error');
+                Swal.fire('Error', error.message, 'error');
             });
         }
     </script>

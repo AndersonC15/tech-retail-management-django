@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | NextGen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #f3f4f6; }
+        .card-header { border-bottom: 1px solid #f3f4f6; }
+    </style>
+</head>
+<body class="text-gray-800 font-sans">
+
+    <nav class="bg-indigo-600 p-4 shadow-lg text-white mb-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fas fa-chart-pie"></i> NextGen Analytics
+            </h1>
+            <div class="flex gap-3">
+                <a href="/nueva-venta/" class="text-sm bg-indigo-500 hover:bg-indigo-700 py-1 px-3 rounded-full transition">
+                    <i class="fas fa-cash-register"></i> Ir a Ventas
+                </a>
+                <span class="text-sm bg-indigo-800 py-1 px-3 rounded-full">Dashboard</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <div class="mb-8 text-center">
+            <h2 class="text-3xl font-bold text-indigo-700">Reporte de Rendimiento</h2>
+            <p class="text-gray-500">Análisis basado en datos históricos de ventas</p>
+        </div>
+
+        {% if mensaje_error %}
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow" role="alert">
+            <p class="font-bold">Error</p>
+            <p>{{ mensaje_error }}</p>
+            <p class="text-sm mt-2">Asegúrate de que el archivo <code>nextgen_ventas.ventas.csv</code> esté en la carpeta raíz del proyecto.</p>
+        </div>
+        {% endif %}
+
+        {% if grafica_productos %}
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            
+            <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition duration-300">
+                <div class="p-4 bg-gray-50 card-header flex justify-between items-center">
+                    <h3 class="font-bold text-indigo-600"><i class="fas fa-box-open mr-2"></i> Productos Más Vendidos</h3>
+                    <span class="text-xs text-gray-400">Top 5</span>
+                </div>
+                <div class="p-4">
+                    <img src="data:image/png;base64,{{ grafica_productos }}" class="w-full h-auto rounded-lg" alt="Gráfica Productos">
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition duration-300">
+                <div class="p-4 bg-gray-50 card-header flex justify-between items-center">
+                    <h3 class="font-bold text-purple-600"><i class="fas fa-users mr-2"></i> Mejores Clientes</h3>
+                    <span class="text-xs text-gray-400">Por monto ($)</span>
+                </div>
+                <div class="p-4">
+                    <img src="data:image/png;base64,{{ grafica_clientes }}" class="w-full h-auto rounded-lg" alt="Gráfica Clientes">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="hidden lg:block"></div>
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition duration-300 col-span-1">
+                <div class="p-4 bg-gray-50 card-header flex justify-between items-center">
+                    <h3 class="font-bold text-green-600"><i class="fas fa-store mr-2"></i> Ventas por Sucursal</h3>
+                    <span class="text-xs text-gray-400">Distribución %</span>
+                </div>
+                <div class="p-4 flex justify-center bg-white">
+                    <img src="data:image/png;base64,{{ grafica_sucursales }}" class="w-full h-auto rounded-lg" alt="Gráfica Sucursales">
+                </div>
+            </div>
+
+            <div class="hidden lg:block"></div>
+        </div>
+
+        {% else %}
+            {% if not mensaje_error %}
+                <div class="text-center py-10">
+                    <div class="text-gray-400 text-6xl mb-4"><i class="fas fa-chart-bar"></i></div>
+                    <h3 class="text-xl font-bold text-gray-600">No hay datos para mostrar</h3>
+                    <p class="text-gray-500">El archivo CSV existe pero parece estar vacío o no tiene ventas válidas.</p>
+                </div>
+            {% endif %}
+        {% endif %}
+
+    </div>
+    <hr class="my-8 border-gray-300">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            
+            <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="p-4 bg-yellow-50 border-b border-yellow-100 flex justify-between items-center">
+                    <h3 class="font-bold text-yellow-700"><i class="fas fa-trophy mr-2"></i> Producto Estrella por Sucursal</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-yellow-100 text-yellow-800 uppercase text-xs">
+                            <tr>
+                                <th class="px-4 py-3">Sucursal</th>
+                                <th class="px-4 py-3">Producto Más Vendido</th>
+                                <th class="px-4 py-3 text-center">Cant. Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for item in tabla_top_sucursal %}
+                            <tr class="hover:bg-yellow-50">
+                                <td class="px-4 py-3 font-semibold">{{ item.sucursal }}</td>
+                                <td class="px-4 py-3">{{ item.producto }}</td>
+                                <td class="px-4 py-3 text-center font-bold text-yellow-600">{{ item.cantidad }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="p-4 text-center text-gray-400">Sin datos de ventas.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="p-4 bg-red-50 border-b border-red-100 flex justify-between items-center">
+                    <h3 class="font-bold text-red-700"><i class="fas fa-exclamation-triangle mr-2"></i> Alerta: Stock Agotado (0)</h3>
+                    <span class="bg-red-200 text-red-800 text-xs px-2 py-1 rounded-full">{{ productos_sin_stock|length }} items</span>
+                </div>
+                <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-red-100 text-red-800 uppercase text-xs sticky top-0">
+                            <tr>
+                                <th class="px-4 py-3">Producto</th>
+                                <th class="px-4 py-3">Marca</th>
+                                </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for p in productos_sin_stock %}
+                            <tr class="hover:bg-red-50">
+                                <td class="px-4 py-3 font-medium text-gray-700">{{ p.nombre }}</td>
+                                <td class="px-4 py-3 text-gray-500">{{ p.id_marca.nombre_marca }}</td>
+                                </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="p-8 text-center text-green-500">
+                                    <i class="fas fa-check-circle text-2xl mb-2"></i><br>
+                                    ¡Todo bien! No hay productos sin stock.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>  
+        </div>
+
+    <footer class="text-center text-gray-400 text-sm py-8 mt-8 border-t">
+        <p>&copy; 2026 NextGen POS System. Todos los derechos reservados.</p>
+    </footer>
+
+</body>
+</html>

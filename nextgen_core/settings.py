@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ventas',
     'inventario',
+    'analisis',
 ]
 
 MIDDLEWARE = [
@@ -51,7 +52,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'nextgen_core.middleware.LogRealIPMiddleware',
 ]
 
 ROOT_URLCONF = 'nextgen_core.urls'
@@ -111,11 +111,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-#< LANGUAGE_CODE = 'en-us'  <-- BORRA ESTO
-LANGUAGE_CODE = 'es-ec'    # Español de Ecuador
-
-# TIME_ZONE = 'UTC'        <-- BORRA ESTO
-TIME_ZONE = 'America/Guayaquil' # Hora de Ecuador continental
+LANGUAGE_CODE = 'es-ec'  
+TIME_ZONE = 'America/Guayaquil' 
 
 USE_I18N = True
 USE_TZ = True
